@@ -1,0 +1,21 @@
+{
+  "name": "@comsoc/timothy",
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "commander": "^2.13.0",
+    "pdfkit": "^0.8.3"
+  },
+  "bin": {
+    "timothy": "lib/cli.js"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/commander": "^2.12.2",
+    "@types/node": "^9.4.0",
+    "@types/pdfkit": "^0.7.36",
+    "typescript": "^2.7.1"
+  }
+}
