@@ -1,5 +1,5 @@
 # timothy
-Fountain to PDF for sketch scripts.
+Fountain-ish to PDF for sketch scripts.
 
 ```yarn global add @comsoc/timothy```
 
@@ -7,4 +7,4 @@ Fountain to PDF for sketch scripts.
 
 
 
-Foutain parser adapted from [Fountain.js](https://github.com/mattdaly/Fountain.js).
+Fountain parser adapted from [Fountain.js](https://github.com/mattdaly/Fountain.js).
