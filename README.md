@@ -15,7 +15,7 @@ Renders Fountain notes in the output
 ### --edit-space, -s
 Increases space between height dialogue for last minute analogue-based pen/pencil editing (scrawling).
 
-## --sans-serif, -S
+### --sans-serif, -S
 Use Helvetica instead of Courier Prime.
 
 
