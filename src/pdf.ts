@@ -44,8 +44,8 @@ export function generatePDF(
   });
 
   const MARGIN = doc.page.width * 0.075;
-  const CHARACTER_WIDTH = doc.page.width * 0.2;
-  const DIALOGUE_WIDTH = doc.page.width * 0.45;
+  const CHARACTER_WIDTH = doc.page.width * 0.175;
+  const DIALOGUE_WIDTH = doc.page.width * 0.4;
   const LINE_HEIGHT = options.editSpace ? 3 : 1.4;
   const TEXT_LINE_HEIGHT = 1.6;
 
