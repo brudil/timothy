@@ -12,12 +12,19 @@ export function generatePDF(outputStream: any, scriptAst: any) {
   const DIALOGUE_WIDTH = doc.page.width * 0.55;
   const LINE_HEIGHT = 2;
 
+  const typeface = {
+    regular: 'fonts/Courier Prime.ttf',
+    bold: 'fonts/Courier Prime Bold.ttf',
+    italic: 'fonts/Courier Prime Italic.ttf',
+    boldItalic: 'fonts/Courier Prime Bold Italic.ttf',
+  };
+
   doc.pipe(outputStream);
 
-  doc.font('fonts/Courier Prime Bold.ttf')
+  doc.font(typeface.regular)
     .text(scriptAst.metadata.title);
 
-  doc.font('fonts/Courier Prime.ttf')
+  doc.font(typeface.regular)
     .text(`${scriptAst.metadata.credit} ${scriptAst.metadata.author || scriptAst.metadata.authors}`);
 
   let currentCharacterStartingHeight = doc.y;
@@ -38,12 +45,12 @@ export function generatePDF(outputStream: any, scriptAst: any) {
       }
 
       currentCharacterStartingHeight = doc.y;
-      doc.font('fonts/Courier Prime.ttf')
+      doc.font(typeface.regular)
         .text(token.text, MARGIN, doc.y, { width: CHARACTER_WIDTH })
 
       currentCharacterLowestHeight = doc.y;
 
-      doc.font('fonts/Courier Prime.ttf')
+      doc.font(typeface.regular)
         .text(characterCount, doc.page.width - MARGIN, currentCharacterStartingHeight, { width: MARGIN })
 
       characterCount = characterCount + 1;
@@ -51,25 +58,25 @@ export function generatePDF(outputStream: any, scriptAst: any) {
     }
 
     if (token.type === Token.Note) {
-      doc.font('fonts/Courier Prime Italic.ttf')
+      doc.font(typeface.italic)
         .fillColor('#aaaaaa')
         .text(token.text, MARGIN, currentCharacterStartingHeight + 10)
         .fillColor('#000000');
     } else if (token.type === Token.Action) {
-      doc.font('fonts/Courier Prime.ttf')
+      doc.font(typeface.regular)
         .text(token.text, MARGIN, currentCharacterStartingHeight + 10)
     } else if (token.type === Token.Parenthetical) {
-      doc.font('fonts/Courier Prime.ttf')
+      doc.font(typeface.regular)
         .text(token.text.toUpperCase(), MARGIN + CHARACTER_WIDTH + MARGIN, currentCharacterStartingHeight, { width: DIALOGUE_WIDTH, continuous: true });
     } else if (token.type === Token.FX) {
-      doc.font('fonts/Courier Prime Bold.ttf')
+      doc.font(typeface.bold)
         .moveDown(LINE_HEIGHT)
         .text(`${(token as any).style}.  ${' '.repeat(64 - (token.text.length + (token as any).style.length))}${token.text.toUpperCase()} ${characterCount}`, MARGIN, currentCharacterStartingHeight, { width: doc.page.width - MARGIN * 2, underline: true });
 
       characterCount = characterCount + 1;
 
     } else {
-      doc.font('fonts/Courier Prime.ttf')
+      doc.font(typeface.regular)
         .text(token.text, MARGIN + CHARACTER_WIDTH + MARGIN, currentCharacterStartingHeight, { width: DIALOGUE_WIDTH, continuous: true });
     }
 
