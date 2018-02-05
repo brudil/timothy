@@ -32,6 +32,21 @@ function chunkToLinesForWidth(words: string[], width: number, measure: (text: st
   return lines;
 }
 
+function drawUnderline(document: any, start: number, end: number) {
+  document.save()
+  document.strokeColor(document._fillColor);
+
+  const lineWidthUnderline = document._fontSize < 10 ? 0.5 : Math.floor(document._fontSize / 7)
+  document.lineWidth(lineWidthUnderline)
+
+  let lineY = document.y - 4;
+  
+  document.moveTo(start, lineY)
+  document.lineTo(end, lineY)
+  document.stroke()
+  document.restore()
+}
+
 export function generatePDF(
   outputStream: any,
   scriptAst: any,
@@ -43,11 +58,11 @@ export function generatePDF(
     margin: 44,
   });
 
-  const MARGIN = doc.page.width * 0.075;
-  const CHARACTER_WIDTH = doc.page.width * 0.175;
+  const MARGIN = doc.page.width * 0.09;
+  const CHARACTER_WIDTH = doc.page.width * 0.12;
   const DIALOGUE_WIDTH = doc.page.width * 0.4;
   const LINE_HEIGHT = options.editSpace ? 3 : 1.4;
-  const TEXT_LINE_HEIGHT = 1.6;
+  const TEXT_LINE_HEIGHT = 1.5;
 
   const typefaceCourier = {
     regular: 'fonts/Courier Prime.ttf',
@@ -139,7 +154,7 @@ export function generatePDF(
       doc
         .font(typeface.regular)
         .text(
-          token.text.toUpperCase(),
+          token.text.toUpperCase().replace(/\n/g, ''),
           MARGIN + CHARACTER_WIDTH + MARGIN,
           currentCharacterStartingHeight,
           { width: DIALOGUE_WIDTH, continuous: true },
@@ -162,8 +177,10 @@ export function generatePDF(
           token.text,
           MARGIN + CHARACTER_WIDTH + MARGIN,
           currentCharacterStartingHeight,
-          { width: DIALOGUE_WIDTH, underline: true },
+          { width: DIALOGUE_WIDTH },
         );
+
+      drawUnderline(doc, MARGIN, doc.x + doc.widthOfString(token.text));
 
       doc
         .font(typeface.bold)
