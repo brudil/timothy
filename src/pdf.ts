@@ -13,6 +13,25 @@ const defaultOptions = {
   editSpace: false,
 };
 
+function chunkToLinesForWidth(words: string[], width: number, measure: (text: string) => number) {
+  const lines: string[][] = [[]];
+  let currentLineWidth = 0;
+  words.forEach((currentWord: string) => {
+    const currentWordWidth = measure(currentWord);
+
+    if (currentLineWidth + currentWordWidth > width) {
+      lines.push([currentWord]);
+      currentLineWidth = currentWordWidth;
+    } else {
+      lines[lines.length - 1].push(currentWord);
+      currentLineWidth = currentLineWidth + currentWordWidth;
+
+    }
+  });
+
+  return lines;
+}
+
 export function generatePDF(
   outputStream: any,
   scriptAst: any,
@@ -26,9 +45,9 @@ export function generatePDF(
 
   const MARGIN = doc.page.width * 0.075;
   const CHARACTER_WIDTH = doc.page.width * 0.2;
-  const DIALOGUE_WIDTH = doc.page.width * 0.5;
+  const DIALOGUE_WIDTH = doc.page.width * 0.45;
   const LINE_HEIGHT = options.editSpace ? 3 : 1.4;
-  const TEXT_LINE_HEIGHT = 2.6;
+  const TEXT_LINE_HEIGHT = 1.6;
 
   const typefaceCourier = {
     regular: 'fonts/Courier Prime.ttf',
@@ -157,18 +176,24 @@ export function generatePDF(
 
       characterCount = characterCount + 1;
     } else {
-      doc
-        .font(typeface.regular)
-        .text(
-          token.text,
+      if (token.text === undefined) {
+        return;
+      }
+
+      const lines = chunkToLinesForWidth(token.text.split(' '), DIALOGUE_WIDTH, doc.widthOfString.bind(doc))
+
+      lines.forEach((line: string[]) => {
+        doc
+          .font(typeface.regular)
+          .text(
+          line.join(' '),
           MARGIN + CHARACTER_WIDTH + MARGIN,
           currentCharacterStartingHeight,
-          {
-            width: DIALOGUE_WIDTH,
-            continuous: true,
-            lineGap: TEXT_LINE_HEIGHT,
-          },
         );
+
+        currentCharacterStartingHeight = currentCharacterStartingHeight + (TEXT_LINE_HEIGHT * 12);
+      })
+
     }
 
     currentCharacterStartingHeight =
