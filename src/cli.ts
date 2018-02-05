@@ -12,6 +12,7 @@ console.log(`
 / /_/ / / / / / / /_/ / /_/ / / / /_/ / 
 \\__/_/_/ /_/ /_/\\____/\\__/_/ /_/\\__, /  
                                /____/`);
+// @ts-ignore chalk typings broken
 console.log(chalk`{white.italic.bold Fountain to PDF for sketch comedy.}`);
 
 program
@@ -38,6 +39,7 @@ generatePDF(fs.createWriteStream(outputFilename), scriptAst, {
 const endTime = Date.now();
 
 console.log(
+  // @ts-ignore chalk typings broken
   chalk`Output {blue ${inputFilename}} > {green ${outputFilename}} in {white ${endTime -
     startTime}ms}`,
 );
