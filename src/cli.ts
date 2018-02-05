@@ -19,8 +19,9 @@ console.log(chalk`{white.italic.bold Fountain to PDF for sketch comedy.}`)
 program
   .version('0.1.0')
   .option('-o, --output [filename]', 'Output file name')
-  .option('-N', '--no-notes', 'Removes any notes from output')
-  .option('-s', '--edit-space', 'Adds ample space for edit notes')
+  .option('-N, --with-notes', 'Renders any notes to output')
+  .option('-s, --edit-space', 'Adds ample space for edit notes')
+  .option('-S, --sans-serif', 'Adds ample space for edit notes')
   .parse(process.argv)
 
 const inputFilename = program.args[0];
@@ -30,7 +31,11 @@ const startTime = Date.now();
 const scriptFile = fs.readFileSync(inputFilename, 'utf-8');
 
 const scriptAst = parse(scriptFile);
-generatePDF(fs.createWriteStream(outputFilename), scriptAst);
+generatePDF(fs.createWriteStream(outputFilename), scriptAst, {
+  renderNotes: program.withNotes,
+  editSpace: program.editSpace,
+  sansSerif: program.sansSerif,
+});
 
 const endTime = Date.now();
 

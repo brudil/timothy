@@ -1,27 +1,58 @@
 import { TokenData, Token } from './parser';
 const PDFDocument = require('pdfkit');
 
-export function generatePDF(outputStream: any, scriptAst: any) {
+interface RenderOptions {
+  sansSerif: boolean;
+  renderNotes: boolean;
+  editSpace: boolean;
+}
+
+const defaultOptions = {
+  sansSerif: false,
+  renderNotes: false,
+  editSpace: false,
+}
+
+export function generatePDF(outputStream: any, scriptAst: any, givenOptions: Partial<RenderOptions> = {}) {
+  const options: RenderOptions = { ...defaultOptions, ...givenOptions };
   const doc = new PDFDocument({
     size: 'A4',
+    margin: 44,
   });
 
 
   const MARGIN = doc.page.width * 0.075;
-  const CHARACTER_WIDTH = doc.page.width * 0.175;
-  const DIALOGUE_WIDTH = doc.page.width * 0.55;
-  const LINE_HEIGHT = 2;
+  const CHARACTER_WIDTH = doc.page.width * 0.2;
+  const DIALOGUE_WIDTH = doc.page.width * 0.5;
+  const LINE_HEIGHT = options.editSpace ? 3 : 1.4;
+  const TEXT_LINE_HEIGHT = 2.6;
 
-  const typeface = {
+  const typefaceCourier = {
     regular: 'fonts/Courier Prime.ttf',
     bold: 'fonts/Courier Prime Bold.ttf',
     italic: 'fonts/Courier Prime Italic.ttf',
     boldItalic: 'fonts/Courier Prime Bold Italic.ttf',
   };
 
+  const typefaceArial = {
+    regular: 'Helvetica',
+    bold: 'Helvetica-Bold',
+    italic: 'Helvetica-Oblique',
+    boldItalic: 'Helvetica-BoldOblique',
+  };
+
+const typeface = options.sansSerif ? typefaceArial : typefaceCourier;
+
   doc.pipe(outputStream);
 
-  doc.font(typeface.regular)
+  doc.fontSize(12)
+
+  if (scriptAst.metadata.series) {
+    doc.font(typeface.italic)
+      .text(scriptAst.metadata.series);
+  }
+
+  doc.font(typeface.bold)
     .text(scriptAst.metadata.title);
 
   doc.font(typeface.regular)
@@ -58,26 +89,36 @@ export function generatePDF(outputStream: any, scriptAst: any) {
     }
 
     if (token.type === Token.Note) {
+      if (!options.renderNotes) {
+        return;
+      }
+
       doc.font(typeface.italic)
         .fillColor('#aaaaaa')
         .text(token.text, MARGIN, currentCharacterStartingHeight + 10)
         .fillColor('#000000');
     } else if (token.type === Token.Action) {
       doc.font(typeface.regular)
-        .text(token.text, MARGIN, currentCharacterStartingHeight + 10)
+        .text(token.text, MARGIN, currentCharacterStartingHeight + 10, { lineGap: TEXT_LINE_HEIGHT });
     } else if (token.type === Token.Parenthetical) {
       doc.font(typeface.regular)
         .text(token.text.toUpperCase(), MARGIN + CHARACTER_WIDTH + MARGIN, currentCharacterStartingHeight, { width: DIALOGUE_WIDTH, continuous: true });
     } else if (token.type === Token.FX) {
+      currentCharacterStartingHeight = currentCharacterStartingHeight + (LINE_HEIGHT * 12)
       doc.font(typeface.bold)
-        .moveDown(LINE_HEIGHT)
-        .text(`${(token as any).style}.  ${' '.repeat(64 - (token.text.length + (token as any).style.length))}${token.text.toUpperCase()} ${characterCount}`, MARGIN, currentCharacterStartingHeight, { width: doc.page.width - MARGIN * 2, underline: true });
+        .text(`${(token as any).style}.`, MARGIN, currentCharacterStartingHeight, { width: doc.page.width - MARGIN * 2});
+
+      doc.font(typeface.bold)
+        .text(token.text, MARGIN + CHARACTER_WIDTH + MARGIN, currentCharacterStartingHeight, { width: DIALOGUE_WIDTH, underline: true });
+
+      doc.font(typeface.bold)
+        .text(characterCount, doc.page.width - MARGIN, currentCharacterStartingHeight, { width: MARGIN })
 
       characterCount = characterCount + 1;
 
     } else {
       doc.font(typeface.regular)
-        .text(token.text, MARGIN + CHARACTER_WIDTH + MARGIN, currentCharacterStartingHeight, { width: DIALOGUE_WIDTH, continuous: true });
+        .text(token.text, MARGIN + CHARACTER_WIDTH + MARGIN, currentCharacterStartingHeight, { width: DIALOGUE_WIDTH, continuous: true, lineGap: TEXT_LINE_HEIGHT });
     }
 
     currentCharacterStartingHeight = doc.y > currentCharacterLowestHeight ? doc.y : currentCharacterLowestHeight;

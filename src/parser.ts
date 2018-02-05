@@ -37,14 +37,14 @@ export interface TokenData {
 
 const regexMap: {[token: string]: RegExp;} = {
   
-    [Token.TitlePage]: /^((?:title|credit|author[s]?|format|source|notes|draft date|date|contact|copyright)\:)/gim,
+    [Token.TitlePage]: /^((?:title|credit|author[s]?|format|source|notes|draft|draft date|date|contact|series|copyright)\:)/gim,
 
     [Token.SceneHeading]: /^((?:\*{0,3}_?)?(?:(?:int|ext|est|i\/e)[. ]).+)|^(?:\.(?!\.+))(.+)/i,
     [Token.SceneHeading]: /( *#(.+)# *)/,
 
     [Token.Transition]: /^((?:FADE (?:TO BLACK|OUT)|CUT TO BLACK)\.|.+ TO\:)|^(?:> *)(.+)/,
 
-    [Token.FX]: /^((F\/X|ATMOS). (.+))/,
+    [Token.FX]: /^((F\/X|ATMOS|GRAMS). (.+))/,
 
     [Token.Dialogue]: /^([A-Z*_]+[0-9A-Z (._\-')]*)(\^?)?(?:\n(?!\n+))([\s\S]+)/,
     [Token.Parenthetical]: /^(\(.+\))$/,
