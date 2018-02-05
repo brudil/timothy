@@ -13,7 +13,7 @@ console.log(`
 \\__/_/_/ /_/ /_/\\____/\\__/_/ /_/\\__, /  
                                /____/`);
 // @ts-ignore chalk typings broken
-console.log(chalk`{white.italic.bold Fountain to PDF for sketch comedy.}`);
+console.log(chalk`{white.italic.bold Fountain-ish to PDF for sketch comedy.}`);
 
 program
   .version('0.1.0')
