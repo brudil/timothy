@@ -5,16 +5,14 @@ import * as program from 'commander';
 import { generatePDF } from './pdf';
 import { parse } from './parser';
 
-console.log((`
+console.log(`
    __  _                 __  __         
   / /_(_)___ ___  ____  / /_/ /_  __  __
  / __/ / __ \`__ \\/ __ \\/ __/ __ \\/ / / /
 / /_/ / / / / / / /_/ / /_/ / / / /_/ / 
 \\__/_/_/ /_/ /_/\\____/\\__/_/ /_/\\__, /  
-                               /____/`)
-);
-console.log(chalk`{white.italic.bold Fountain to PDF for sketch comedy.}`)
-
+                               /____/`);
+console.log(chalk`{white.italic.bold Fountain to PDF for sketch comedy.}`);
 
 program
   .version('0.1.0')
@@ -22,7 +20,7 @@ program
   .option('-N, --with-notes', 'Renders any notes to output')
   .option('-s, --edit-space', 'Adds ample space for edit notes')
   .option('-S, --sans-serif', 'Adds ample space for edit notes')
-  .parse(process.argv)
+  .parse(process.argv);
 
 const inputFilename = program.args[0];
 const outputFilename = program.output;
@@ -39,4 +37,7 @@ generatePDF(fs.createWriteStream(outputFilename), scriptAst, {
 
 const endTime = Date.now();
 
-console.log(chalk`Output {blue ${inputFilename}} > {green ${outputFilename}} in {white ${endTime - startTime}ms}`)
+console.log(
+  chalk`Output {blue ${inputFilename}} > {green ${outputFilename}} in {white ${endTime -
+    startTime}ms}`,
+);

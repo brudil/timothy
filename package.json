@@ -16,6 +16,24 @@
     "@types/commander": "^2.12.2",
     "@types/node": "^9.4.0",
     "@types/pdfkit": "^0.7.36",
+    "prettier": "^1.10.2",
     "typescript": "^2.7.1"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "prepare": "tsc",
+    "format": "prettier \"src/**/*.ts\" --write"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "jsxBracketSameLine": false,
+    "arrowParens": "always"
   }
 }
