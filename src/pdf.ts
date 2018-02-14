@@ -55,7 +55,7 @@ export function generatePDF(
   const options: RenderOptions = { ...defaultOptions, ...givenOptions };
   const doc = new PDFDocument({
     size: 'A4',
-    margin: 44,
+    margin: 55,
   });
 
   const MARGIN = doc.page.width * 0.09;
