@@ -12,6 +12,7 @@ const defaultOptions = {
   renderNotes: false,
   editSpace: false,
 };
+var flatMap = (a: Array<any>, cb: (i: any) => any) => [].concat(...a.map(cb))
 
 function chunkToLinesForWidth(words: string[], width: number, measure: (text: string) => number) {
   const lines: string[][] = [[]];
@@ -39,7 +40,7 @@ function drawUnderline(document: any, start: number, end: number) {
   const lineWidthUnderline = document._fontSize < 10 ? 0.5 : Math.floor(document._fontSize / 7)
   document.lineWidth(lineWidthUnderline)
 
-  let lineY = document.y - 4;
+  let lineY = document.y - 2;
   
   document.moveTo(start, lineY)
   document.lineTo(end, lineY)
@@ -93,7 +94,7 @@ export function generatePDF(
   doc
     .font(typeface.regular)
     .text(
-      `${scriptAst.metadata.credit} ${scriptAst.metadata.author ||
+      `${scriptAst.metadata.credit || 'by'} ${scriptAst.metadata.author ||
         scriptAst.metadata.authors}`,
     );
 
@@ -107,117 +108,138 @@ export function generatePDF(
   });
 
   scriptAst.tokens.forEach((token: TokenData) => {
-    if (token.type === Token.Character) {
-      doc.moveDown(LINE_HEIGHT);
+    switch (token.type) {
+      case Token.Character: {
+        
+        doc.y = doc.y + (LINE_HEIGHT * 16);
 
-      if (doc.y > doc.page.height * 0.85) {
-        doc.addPage();
-      }
+        if (doc.y > doc.page.height * 0.85) {
+          doc.addPage();
+        }
 
-      currentCharacterStartingHeight = doc.y;
-      doc
-        .font(typeface.regular)
-        .text(token.text, MARGIN, doc.y, { width: CHARACTER_WIDTH });
+        currentCharacterStartingHeight = doc.y;
+        doc
+          .font(typeface.regular)
+          .text(token.text, MARGIN, doc.y, { width: CHARACTER_WIDTH });
 
-      currentCharacterLowestHeight = doc.y;
+        currentCharacterLowestHeight = doc.y;
 
-      doc
-        .font(typeface.regular)
-        .text(
-          characterCount,
-          doc.page.width - MARGIN,
-          currentCharacterStartingHeight,
-          { width: MARGIN },
-        );
-
-      characterCount = characterCount + 1;
-      return;
-    }
-
-    if (token.type === Token.Note) {
-      if (!options.renderNotes) {
-        return;
-      }
-
-      doc
-        .font(typeface.italic)
-        .fillColor('#aaaaaa')
-        .text(token.text, MARGIN, currentCharacterStartingHeight + 10)
-        .fillColor('#000000');
-    } else if (token.type === Token.Action) {
-      doc
-        .font(typeface.regular)
-        .text(token.text, MARGIN, currentCharacterStartingHeight + 10, {
-          lineGap: TEXT_LINE_HEIGHT,
-        });
-    } else if (token.type === Token.Parenthetical) {
-      doc
-        .font(typeface.regular)
-        .text(
-          token.text.toUpperCase().replace(/\n/g, ''),
-          MARGIN + CHARACTER_WIDTH + MARGIN,
-          currentCharacterStartingHeight,
-          { width: DIALOGUE_WIDTH, continuous: true },
-        );
-    } else if (token.type === Token.FX) {
-      currentCharacterStartingHeight =
-        currentCharacterStartingHeight + LINE_HEIGHT * 12;
-      doc
-        .font(typeface.bold)
-        .text(
-          `${(token as any).style}.`,
-          MARGIN,
-          currentCharacterStartingHeight,
-          { width: doc.page.width - MARGIN * 2 },
-        );
-
-      doc
-        .font(typeface.bold)
-        .text(
-          token.text,
-          MARGIN + CHARACTER_WIDTH + MARGIN,
-          currentCharacterStartingHeight,
-          { width: DIALOGUE_WIDTH },
-        );
-
-      drawUnderline(doc, MARGIN, doc.x + doc.widthOfString(token.text));
-
-      doc
-        .font(typeface.bold)
-        .text(
-          characterCount,
-          doc.page.width - MARGIN,
-          currentCharacterStartingHeight,
-          { width: MARGIN },
-        );
-
-      characterCount = characterCount + 1;
-    } else {
-      if (token.text === undefined) {
-        return;
-      }
-
-      const lines = chunkToLinesForWidth(token.text.split(' '), DIALOGUE_WIDTH, doc.widthOfString.bind(doc))
-
-      lines.forEach((line: string[]) => {
         doc
           .font(typeface.regular)
           .text(
-          line.join(' '),
-          MARGIN + CHARACTER_WIDTH + MARGIN,
-          currentCharacterStartingHeight,
+            characterCount,
+            doc.page.width - MARGIN,
+            currentCharacterStartingHeight,
+            { width: MARGIN },
         );
 
-        currentCharacterStartingHeight = currentCharacterStartingHeight + (TEXT_LINE_HEIGHT * 12);
-      })
+        characterCount = characterCount + 1;
+        break;
+      }
+      case Token.Note: {
+        if (!options.renderNotes) {
+          return;
+        }
 
+        doc
+          .font(typeface.italic)
+          .fillColor('#aaaaaa')
+          .text(token.text, MARGIN, currentCharacterStartingHeight + 10)
+          .fillColor('#000000');
+        break;
+      }
+      case Token.Action: {
+        doc
+          .font(typeface.regular)
+          .text(token.text, MARGIN, currentCharacterStartingHeight + 10, {
+            lineGap: TEXT_LINE_HEIGHT,
+            align: 'center',
+            width: DIALOGUE_WIDTH
+          });
+          
+        break;
+      }
+      case Token.Parenthetical: {
+        doc
+          .font(typeface.regular)
+          .text(
+            token.text.toUpperCase().replace(/\n/g, ''),
+            MARGIN + CHARACTER_WIDTH + MARGIN,
+            currentCharacterStartingHeight,
+            { width: DIALOGUE_WIDTH, continuous: true },
+        );
+        currentCharacterStartingHeight = doc.y;
+        break;
+      }
+      case Token.FX: {
+        currentCharacterStartingHeight =
+          currentCharacterStartingHeight + LINE_HEIGHT * 12;
+        doc
+          .font(typeface.bold)
+          .text(
+            `${(token as any).style}.`,
+            MARGIN,
+            currentCharacterStartingHeight,
+            { width: doc.page.width - MARGIN * 2 },
+        );
+
+        const lines = chunkToLinesForWidth(token.text.split(' '), DIALOGUE_WIDTH, doc.widthOfString.bind(doc)).map(m => m.join(' '));
+
+        doc
+          .font(typeface.bold)
+          .text(
+            lines[0],
+            MARGIN + CHARACTER_WIDTH + MARGIN,
+            currentCharacterStartingHeight,
+            { width: DIALOGUE_WIDTH },
+        );
+
+        drawUnderline(doc, MARGIN, doc.x + doc.widthOfString(lines[0]));
+
+        doc
+          .font(typeface.bold)
+          .text(
+            characterCount,
+            doc.page.width - MARGIN,
+            currentCharacterStartingHeight,
+            { width: MARGIN },
+        );
+
+        characterCount = characterCount + 1;
+        break;
+      }
+      case Token.Dialogue: {
+        if (token.text === undefined) {
+          return;
+        }
+
+        const lines = flatMap(token.text.split('\n'), l => chunkToLinesForWidth(l.split(' '), DIALOGUE_WIDTH, doc.widthOfString.bind(doc)))
+        console.log(lines);
+        lines.forEach((line: string[]) => {
+          doc
+            .font(typeface.regular)
+            .text(
+              line.join(' '),
+              MARGIN + CHARACTER_WIDTH + MARGIN,
+              currentCharacterStartingHeight,
+          );
+
+          currentCharacterStartingHeight = currentCharacterStartingHeight + (TEXT_LINE_HEIGHT * 12);
+        });
+
+        currentCharacterStartingHeight =
+          doc.y > currentCharacterLowestHeight
+            ? doc.y
+            : currentCharacterLowestHeight;
+        break;
+      }
+      case 'dialogue_begin': break;
+      case 'dialogue_end': break;
+      default: {
+        console.warn(`[issue] Token: ${token.type} is not handled during render`);
+      }
     }
-
-    currentCharacterStartingHeight =
-      doc.y > currentCharacterLowestHeight
-        ? doc.y
-        : currentCharacterLowestHeight;
-  });
+ });
 
   doc.end();
 
